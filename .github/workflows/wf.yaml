@@ -17,27 +17,28 @@ env:
 jobs:
   convert_to_array:
     runs-on: ubuntu-latest
+    inputs:
+      my-variable:
+        description: 'variable name'
+        required: true
+
     steps:
       - name: Install jq
         run: sudo apt-get install jq
 
       - name: Step 1 - Use convert_to_array function
-        env:
-          MY_VARIABLE: '["item1", "item2", "item3"]'
         run: |
           source <(echo "${CONVERT_TO_ARRAY_FUNC}")
-          converted_variable=$(convert_to_array "${MY_VARIABLE}")
+          converted_variable=$(convert_to_array "${{ inputs.my-variable }}")
           echo "Converted variable in Step 1: ${converted_variable}"
           for item in $(echo "${converted_variable}" | jq -r '.[]'); do
             echo "Item: ${item}"
           done
 
       - name: Step 2 - Use convert_to_array function
-        env:
-          MY_VARIABLE: '"single_item"'
         run: |
           source <(echo "${CONVERT_TO_ARRAY_FUNC}")
-          converted_variable=$(convert_to_array "${MY_VARIABLE}")
+          converted_variable=$(convert_to_array "${{ inputs.my-variable }}")
           echo "Converted variable in Step 2: ${converted_variable}"
           for item in $(echo "${converted_variable}" | jq -r '.[]'); do
             echo "Item: ${item}"
