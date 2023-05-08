@@ -18,14 +18,14 @@ jobs:
       - name: Step 1 - Use convert_to_array function
         run: |
           convert_to_array() {
-            if [[ startsWith($1, '[') && endsWith($1, ']') ]]; then
+            if [[ startsWith($1, "[") && endsWith($1, "]") ]]; then
               echo "$1"
             else
               echo "[\"$1\"]"
             fi
           }
 
-          converted_variable=$(convert_to_array "${{ inputs.my_variable }}")
+          converted_variable=$(convert_to_array '${{ inputs.my_variable }}')
           echo "Converted variable in Step 1: $converted_variable"
           for item in $(echo "${converted_variable}" | jq -r '.[]'); do
             echo "Item: ${item}"
