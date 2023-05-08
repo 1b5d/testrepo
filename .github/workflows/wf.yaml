@@ -12,7 +12,7 @@ env:
   CONVERT_TO_ARRAY_FUNC: |
     convert_to_array() {
       if [[ "$1" =~ ^\[.*\]$ ]]; then
-        echo "$1"
+        echo $1
       else
         echo "[\"$1\"]"
       fi
