@@ -24,6 +24,6 @@ jobs:
 
       - name: Use convert_to_array function
         run: |
-          for item in $(echo "${{ fromJSON(steps.json_array.outputs.items) }}" | jq -r '.[]'); do
+          for item in $(echo "${{ toJSON(steps.json_array.outputs.items) }}" | jq -r '.[]'); do
             echo "Item: ${item}"
           done
