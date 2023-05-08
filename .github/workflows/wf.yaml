@@ -1,6 +1,12 @@
 name: Convert to Array in Multiple Steps
 
-on: [push]
+on:
+  workflow_dispatch:
+    inputs:
+        my_variable:
+          description: 'variable name'
+          required: true
+
 
 env:
   CONVERT_TO_ARRAY_FUNC: |
@@ -17,10 +23,6 @@ env:
 jobs:
   convert_to_array:
     runs-on: ubuntu-latest
-    inputs:
-      my-variable:
-        description: 'variable name'
-        required: true
 
     steps:
       - name: Install jq
@@ -29,7 +31,7 @@ jobs:
       - name: Step 1 - Use convert_to_array function
         run: |
           source <(echo "${CONVERT_TO_ARRAY_FUNC}")
-          converted_variable=$(convert_to_array "${{ inputs.my-variable }}")
+          converted_variable=$(convert_to_array "${{ inputs.my_variable }}")
           echo "Converted variable in Step 1: ${converted_variable}"
           for item in $(echo "${converted_variable}" | jq -r '.[]'); do
             echo "Item: ${item}"
@@ -38,7 +40,7 @@ jobs:
       - name: Step 2 - Use convert_to_array function
         run: |
           source <(echo "${CONVERT_TO_ARRAY_FUNC}")
-          converted_variable=$(convert_to_array "${{ inputs.my-variable }}")
+          converted_variable=$(convert_to_array "${{ inputs.my_variable }}")
           echo "Converted variable in Step 2: ${converted_variable}"
           for item in $(echo "${converted_variable}" | jq -r '.[]'); do
             echo "Item: ${item}"
