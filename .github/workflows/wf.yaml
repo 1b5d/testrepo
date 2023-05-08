@@ -15,7 +15,7 @@ jobs:
       - name: Convert input to JSON array
         id: json_array
         run: |
-          input_var="${{ fromJSON(inputs.my_variable) }}"
+          input_var="${{ toJSON(inputs.my_variable) }}"
           if [[ $(echo "$input_var" | jq -e . >/dev/null 2>&1; echo $?) -eq 0 ]]; then
             echo "items=$input_var" >> $GITHUB_OUTPUT
           else
@@ -24,7 +24,6 @@ jobs:
 
       - name: Use convert_to_array function
         run: |
-          echo "Converted variable in Step 1: $converted_variable"
           for item in $(echo "${{ steps.json_array.outputs.items }}" | jq -r '.[]'); do
             echo "Item: ${item}"
           done
