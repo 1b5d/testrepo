@@ -8,16 +8,6 @@ on:
           required: true
 
 
-env:
-  CONVERT_TO_ARRAY_FUNC: |
-    convert_to_array() {
-      if [[ startsWith($1, '[') && endsWith($1, ']') ]]; then
-        echo "$1"
-      else
-        echo "[\"$1\"]"
-      fi
-    }
-
 jobs:
   convert_to_array:
     runs-on: ubuntu-latest
@@ -27,7 +17,14 @@ jobs:
 
       - name: Step 1 - Use convert_to_array function
         run: |
-          source <(echo "${CONVERT_TO_ARRAY_FUNC}")
+          convert_to_array() {
+            if [[ startsWith($1, '[') && endsWith($1, ']') ]]; then
+              echo "$1"
+            else
+              echo "[\"$1\"]"
+            fi
+          }
+
           converted_variable=$(convert_to_array "${{ inputs.my_variable }}")
           echo "Converted variable in Step 1: $converted_variable"
           for item in $(echo "${converted_variable}" | jq -r '.[]'); do
@@ -36,7 +33,14 @@ jobs:
 
       - name: Step 2 - Use convert_to_array function
         run: |
-          source <(echo "${CONVERT_TO_ARRAY_FUNC}")
+          convert_to_array() {
+            if [[ startsWith($1, '[') && endsWith($1, ']') ]]; then
+              echo "$1"
+            else
+              echo "[\"$1\"]"
+            fi
+          }
+
           converted_variable=$(convert_to_array "${{ inputs.my_variable }}")
           echo "Converted variable in Step 2: $converted_variable"
           for item in $(echo "${converted_variable}" | jq -r '.[]'); do
