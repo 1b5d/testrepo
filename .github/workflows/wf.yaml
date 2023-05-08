@@ -24,7 +24,7 @@ jobs:
               echo "[\"$1\"]"
             fi
           }
-
+          echo "value to convert: ${{ toJSON(inputs.my_variable) }}"
           converted_variable=$(convert_to_array '${{ toJSON(inputs.my_variable) }}')
           echo "Converted variable in Step 1: $converted_variable"
           for item in $(echo "${converted_variable}" | jq -r '.[]'); do
