@@ -25,7 +25,7 @@ jobs:
             fi
           }
 
-          converted_variable=$(convert_to_array "${{ inputs.my_variable }}")
+          converted_variable=$(convert_to_array "$(echo '${{ inputs.my_variable }}')")
           echo "Converted variable in Step 1: $converted_variable"
           for item in $(echo "${converted_variable}" | jq -r '.[]'); do
             echo "Item: ${item}"
@@ -41,7 +41,7 @@ jobs:
             fi
           }
 
-          converted_variable=$(convert_to_array "${{ inputs.my_variable }}")
+          converted_variable=$(convert_to_array "$(echo '${{ inputs.my_variable }}')")
           echo "Converted variable in Step 2: $converted_variable"
           for item in $(echo "${converted_variable}" | jq -r '.[]'); do
             echo "Item: ${item}"
