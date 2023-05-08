@@ -17,9 +17,9 @@ jobs:
         run: |
           input_var="${{ inputs.my_variable }}"
           if [[ $(echo "$input_var" | jq -e . >/dev/null 2>&1; echo $?) -eq 0 ]]; then
-            echo "::set-output name=items::$input_var"
+            echo "items=$input_var" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=items::$( echo "[$input_var]" | jq . )"
+            echo "items=[\"$input_var\"]" >> $GITHUB_OUTPUT
           fi
 
       - name: Use convert_to_array function
