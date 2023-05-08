@@ -11,19 +11,16 @@ on:
 env:
   CONVERT_TO_ARRAY_FUNC: |
     convert_to_array() {
-      if [[ "$1" =~ ^\[.*\]$ ]]; then
+      if [[ "$1" =~ "^\[.*\]$" ]]; then
         echo "$1"
-      elif [[ "$1" =~ ^\".*\"$ ]]; then
-        echo "[$1]"
       else
-        echo "$1"
+        echo "[$1]"
       fi
     }
 
 jobs:
   convert_to_array:
     runs-on: ubuntu-latest
-
     steps:
       - name: Install jq
         run: sudo apt-get install jq
