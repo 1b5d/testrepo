@@ -18,7 +18,7 @@ jobs:
       - name: Step 1 - Use convert_to_array function
         run: |
           convert_to_array() {
-            if [[ $1 =~ "\[*\]" ]]; then
+            if [[ $1 =~ "[*]" ]]; then
               echo "$1"
             else
               echo "[\"$1\"]"
