@@ -1,0 +1,44 @@
+name: Convert to Array in Multiple Steps
+
+on: [push]
+
+env:
+  CONVERT_TO_ARRAY_FUNC: |
+    convert_to_array() {
+      if [[ "$1" =~ ^\[.*\]$ ]]; then
+        echo "$1"
+      elif [[ "$1" =~ ^\".*\"$ ]]; then
+        echo "[$1]"
+      else
+        echo "$1"
+      fi
+    }
+
+jobs:
+  convert_to_array:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install jq
+        run: sudo apt-get install jq
+
+      - name: Step 1 - Use convert_to_array function
+        env:
+          MY_VARIABLE: '["item1", "item2", "item3"]'
+        run: |
+          source <(echo "${CONVERT_TO_ARRAY_FUNC}")
+          converted_variable=$(convert_to_array "${MY_VARIABLE}")
+          echo "Converted variable in Step 1: ${converted_variable}"
+          for item in $(echo "${converted_variable}" | jq -r '.[]'); do
+            echo "Item: ${item}"
+          done
+
+      - name: Step 2 - Use convert_to_array function
+        env:
+          MY_VARIABLE: '"single_item"'
+        run: |
+          source <(echo "${CONVERT_TO_ARRAY_FUNC}")
+          converted_variable=$(convert_to_array "${MY_VARIABLE}")
+          echo "Converted variable in Step 2: ${converted_variable}"
+          for item in $(echo "${converted_variable}" | jq -r '.[]'); do
+            echo "Item: ${item}"
+          done
