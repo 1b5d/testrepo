@@ -11,7 +11,7 @@ on:
 env:
   CONVERT_TO_ARRAY_FUNC: |
     convert_to_array() {
-      if [[ "$1" =~ ^\[.*\]$ ]]; then
+      if [[ startsWith($1, '[') && endsWith($1, ']') ]]; then
         echo "$1"
       else
         echo "[\"$1\"]"
