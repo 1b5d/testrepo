@@ -8,20 +8,19 @@ on:
       - 'main'
 
 jobs:
-  main:
-    name: main job
+  with_array:
+    name: with array
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: try array
-        uses: ./.github/workflows/reusable-wf.yaml
-        with:
-          my_variable: '["str1", "str2"]'
-      - name: try string
-        uses: ./.github/workflows/reusable-wf.yaml
-        with:
-          my_variable: str1
+    uses: ./.github/workflows/reusable-wf.yaml
+    with:
+      my_variable: '["str1", "str2"]'
+      
+  with_string:
+    name: with string
+    runs-on: ubuntu-latest
+    uses: ./.github/workflows/reusable-wf.yaml
+    with:
+      my_variable: str1
       
 
 
