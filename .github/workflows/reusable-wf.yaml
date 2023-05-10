@@ -5,13 +5,11 @@ on:
     inputs:
         my_variable:
           description: 'var'
-          type: sequence | string
           required: true
   workflow_call:
     inputs:
         my_variable:
           description: 'var'
-          type: sequence | string
           required: true
 
 
