@@ -1,0 +1,36 @@
+name: Convert to Array in Multiple Steps
+
+on:
+  workflow_dispatch:
+    inputs:
+        my_variable:
+          description: 'var'
+          type: string
+          required: true
+  workflow_call:
+    inputs:
+        my_variable:
+          description: 'var'
+          type: string
+          required: true
+
+
+jobs:
+  convert_to_array:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Convert input to JSON array
+        id: json_array
+        run: |
+          input_var=${{ toJSON(inputs.my_variable) }}
+          if [[ $(echo "$input_var" | jq -e . >/dev/null 2>&1; echo $?) -eq 0 ]]; then
+            echo "items=$input_var" >> $GITHUB_OUTPUT
+          else
+            echo "items=[\"$input_var\"]" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Use convert_to_array function
+        run: |
+          for item in $(echo "${{ toJSON(steps.json_array.outputs.items) }}" | jq -r '.[]'); do
+            echo "Item: ${item}"
+          done

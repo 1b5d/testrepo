@@ -1,29 +1,28 @@
-name: Convert to Array in Multiple Steps
+name: Main build
 
 on:
-  workflow_dispatch:
-    inputs:
-        my_variable:
-          description: 'variable name'
-          required: true
 
+  push:
+    branches:
+      - 'main'
 
 jobs:
-  convert_to_array:
+  main:
+    name: main job
     runs-on: ubuntu-latest
     steps:
-      - name: Convert input to JSON array
-        id: json_array
-        run: |
-          input_var=${{ toJSON(inputs.my_variable) }}
-          if [[ $(echo "$input_var" | jq -e . >/dev/null 2>&1; echo $?) -eq 0 ]]; then
-            echo "items=$input_var" >> $GITHUB_OUTPUT
-          else
-            echo "items=[\"$input_var\"]" >> $GITHUB_OUTPUT
-          fi
+      - name: try array
+        uses: ./.github/workflows/reusable-wf.yaml
+        with:
+          my_variable: ["str1", "str2"]
+      - name: try array string
+        uses: ./.github/workflows/reusable-wf.yaml
+        with:
+          my_variable: '["str1", "str2"]'
+      - name: try string
+        uses: ./.github/workflows/reusable-wf.yaml
+        with:
+          my_variable: str1
+      
 
-      - name: Use convert_to_array function
-        run: |
-          for item in $(echo "${{ toJSON(steps.json_array.outputs.items) }}" | jq -r '.[]'); do
-            echo "Item: ${item}"
-          done
+
