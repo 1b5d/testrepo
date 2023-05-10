@@ -14,10 +14,6 @@ jobs:
       - name: try array
         uses: ./.github/workflows/reusable-wf.yaml
         with:
-          my_variable: ["str1", "str2"]
-      - name: try array string
-        uses: ./.github/workflows/reusable-wf.yaml
-        with:
           my_variable: '["str1", "str2"]'
       - name: try string
         uses: ./.github/workflows/reusable-wf.yaml
