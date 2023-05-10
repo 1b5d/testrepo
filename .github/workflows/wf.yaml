@@ -14,7 +14,7 @@ jobs:
     with:
       my_variable: '["str1", "str2"]'
 
-  main string:
+  main_string:
     name: main string
     uses: ./.github/workflows/reusable-wf.yaml
     with:
