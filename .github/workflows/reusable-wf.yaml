@@ -29,8 +29,13 @@ jobs:
             echo "items=[\"$input_var\"]" >> $GITHUB_OUTPUT
           fi
 
+      - name: Install parallel
+        run: sudo apt-get install parallel
+
       - name: Use convert_to_array function
         run: |
+          touch commands.txt
           for item in $(echo "${{ toJSON(steps.json_array.outputs.items) }}" | jq -r '.[]'); do
-            echo "Item: ${item}"
+            echo "echo \"Item: ${item}\"" >> commands.txt
           done
+          cat commands.txt | parallel -j $(nproc)
