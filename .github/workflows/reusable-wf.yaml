@@ -36,6 +36,7 @@ jobs:
         run: |
           touch commands.txt
           for item in $(echo "${{ toJSON(steps.json_array.outputs.items) }}" | jq -r '.[]'); do
-            echo "echo \"Item: ${item}\"" >> commands.txt
+            echo "echo \
+            \"Item: ${item}\"" >> commands.txt
           done
           cat commands.txt | parallel -j $(nproc)
