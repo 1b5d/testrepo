@@ -34,4 +34,4 @@ jobs:
 
       - name: Use convert_to_array function
         run: |
-          echo "${{ toJSON(steps.json_array.outputs.items) }}" | jq -r '.[]' | parallel -j $(nproc) --no-notice echo "VAR1={}" \; echo "Item: $VAR1{}"
+          echo "${{ toJSON(steps.json_array.outputs.items) }}" | jq -r '.[]' | parallel -j $(nproc) --no-notice VAR1={} \; echo "Item: $VAR1{}"
