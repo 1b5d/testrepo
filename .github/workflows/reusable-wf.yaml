@@ -34,4 +34,4 @@ jobs:
 
       - name: Use convert_to_array function
         run: |
-          echo "${{ toJSON(steps.json_array.outputs.items) }}" | jq -r '.[]' | parallel -j $(nproc) --no-notice echo "Item: {}"
+          echo "${{ toJSON(steps.json_array.outputs.items) }}" | jq -r '.[]' | parallel -j $(nproc) --no-notice echo "Item: {}" \; echo "Duplicate Item: {}"
