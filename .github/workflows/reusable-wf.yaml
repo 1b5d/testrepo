@@ -34,9 +34,4 @@ jobs:
 
       - name: Use convert_to_array function
         run: |
-          touch commands.txt
-          for item in $(echo "${{ toJSON(steps.json_array.outputs.items) }}" | jq -r '.[]'); do
-            echo "echo \
-            \"Item: ${item}\"" >> commands.txt
-          done
-          cat commands.txt | parallel -j $(nproc)
+          echo "${{ toJSON(steps.json_array.outputs.items) }}" | jq -r '.[]' | parallel -j $(nproc) --no-notice echo "Item: {}"
