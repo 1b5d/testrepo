@@ -1,0 +1,87 @@
+name: "Indirect Release Merge"
+
+on:
+  workflow_dispatch:
+    inputs:
+      head_branch:
+        description: "The branch that contains commits for your pull request (e.g. release/v1.23)"
+        required: true
+      base_branch:
+        description: "The branch into which you want your code merged (default: master)"
+        required: true
+        default: "master"
+  workflow_call:
+    inputs:
+      head_branch:
+        description: "The branch that contains commits for your pull request"
+        required: true
+        type: string
+      base_branch:
+        description: "The branch into which you want your code merged"
+        required: true
+        type: string
+    secrets:
+      TOKEN: # equals GITHUB_TOKEN
+        required: true
+      CELOBOT_GITHUB_TOKEN:
+        required: true
+
+jobs:
+  create-pull-request:
+    name: "Create Pull Request"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure environment variables (Part 1)
+        shell: bash
+        run: |
+          echo "HEAD_BRANCH=$(echo ${{ inputs.head_branch || github.event.inputs.head_branch }})" >> $GITHUB_ENV
+          echo "HEAD_BRANCH=$(echo ${{ inputs.head_branch || github.event.inputs.head_branch }})"
+          echo "BASE_BRANCH=$(echo ${{ inputs.base_branch || github.event.inputs.base_branch }})" >> $GITHUB_ENV
+          echo "BASE_BRANCH=$(echo ${{ inputs.base_branch || github.event.inputs.base_branch }})"
+
+      - name: Checkout head branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.HEAD_BRANCH }}
+          token: ${{ secrets.GITHUB_TOKEN || secrets.TOKEN }}
+
+      - name: Configure environment variables (Part 2)
+        shell: bash
+        run: |
+          echo "HASH_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "HASH_SHORT=$(git rev-parse --short HEAD)"
+          echo "HASH=$(git rev-parse HEAD)" >> $GITHUB_ENV
+          echo "HASH=$(git rev-parse HEAD)"
+          echo "PR_BRANCH=$(echo automated/${{ inputs.head_branch || github.event.inputs.head_branch }}-into-${{ inputs.base_branch || github.event.inputs.base_branch }}-for-$(git rev-parse --short HEAD)-${{ github.run_id }}-${{ github.run_attempt }})" >> $GITHUB_ENV
+          echo "PR_BRANCH=$(echo automated/${{ inputs.head_branch || github.event.inputs.head_branch }}-into-${{ inputs.base_branch || github.event.inputs.base_branch }}-for-$(git rev-parse --short HEAD)-${{ github.run_id }}-${{ github.run_attempt }})"
+
+      - name: Create an auxiliary branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN || secrets.TOKEN }}
+        run: |
+          git branch ${{ env.PR_BRANCH }}
+          git push origin ${{ env.PR_BRANCH }}
+
+      - name: Checkout auxiliary branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.PR_BRANCH }}
+          token: ${{ secrets.GITHUB_TOKEN || secrets.TOKEN }}
+
+      - name: Create a PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.CELOBOT_GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --title "Merge ${{ env.HEAD_BRANCH }} into ${{ env.BASE_BRANCH }} for ${{ env.HASH_SHORT }}" \
+            --body "$(git log --oneline --decorate --abbrev-commit ${{ env.BASE_BRANCH }}..${{ env.PR_BRANCH }})" \
+            --base ${{ env.BASE_BRANCH }} \
+            --head ${{ env.PR_BRANCH }}
+
+      - name: Cleanup auxiliary branch if PR creation failed
+        if: ${{ failure() }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN || secrets.TOKEN }}
+        shell: bash
+        run: |
+          git push origin --delete ${{ env.PR_BRANCH }}
