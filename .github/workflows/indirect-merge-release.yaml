@@ -72,7 +72,7 @@ jobs:
         shell: bash
         run: |
           PR_BODY_FILE="pr_body.txt"
-          CHANGES=$(git fetch --silent && git log origin/${{ env.BASE_BRANCH }}..origin/${{ env.HEAD_BRANCH }} --oneline --decorate --abbrev-commit)
+          CHANGES=$(git fetch --quiet && git log origin/${{ env.BASE_BRANCH }}..origin/${{ env.HEAD_BRANCH }} --oneline --decorate --abbrev-commit)
           touch $PR_BODY_FILE
           
           echo """Automated release merge https://github.com/${{ github.repository }}/tree/${{ env.HEAD_BRANCH }} into https://github.com/${{ github.repository }}/tree/${{ env.BASE_BRANCH }} for ${{ env.HASH }}.
