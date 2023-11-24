@@ -67,14 +67,31 @@ jobs:
         with:
           ref: ${{ env.PR_BRANCH }}
           token: ${{ secrets.GITHUB_TOKEN || secrets.TOKEN }}
+          
+      - name: Construct PR body
+        shell: bash
+        run: |
+          PR_BODY_FILE="pr_body.txt"
+          CHANGES=$(git log --oneline --decorate --abbrev-commit ${{ env.BASE_BRANCH }}..${{ env.HEAD_BRANCH }})
+          touch $PR_BODY_FILE
+          
+          echo """Automated release merge https://github.com/${{ github.repository }}/tree/${{ env.HEAD_BRANCH }} into https://github.com/${{ github.repository }}/tree/${{ env.BASE_BRANCH }} for ${{ env.HASH }}.
+          
+          ##### CHANGES
+          $(git log --oneline --decorate --abbrev-commit ${{ env.BASE_BRANCH }}..${{ env.HEAD_BRANCH }})
 
+          ##### DIFF
+          - https://github.com/${{ github.repository }}/compare/${{ env.BASE_BRANCH }}...${{ env.HEAD_BRANCH }} """ >> $PR_BODY_FILE
+
+          echo "PR_BODY_FILE=$PR_BODY_FILE" >> $GITHUB_ENV
+        
       - name: Create a PR
         env:
           GITHUB_TOKEN: ${{ secrets.CELOBOT_GITHUB_TOKEN }}
         run: |
           gh pr create \
             --title "Merge ${{ env.HEAD_BRANCH }} into ${{ env.BASE_BRANCH }} for ${{ env.HASH_SHORT }}" \
-            --body "$(git log --oneline --decorate --abbrev-commit ${{ env.BASE_BRANCH }}..${{ env.PR_BRANCH }})" \
+            --body-file "${{ env.PR_BODY_FILE }}" \
             --base ${{ env.BASE_BRANCH }} \
             --head ${{ env.PR_BRANCH }}
 
