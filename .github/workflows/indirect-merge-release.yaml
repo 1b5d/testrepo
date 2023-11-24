@@ -44,6 +44,7 @@ jobs:
         with:
           ref: ${{ env.HEAD_BRANCH }}
           token: ${{ secrets.GITHUB_TOKEN || secrets.TOKEN }}
+          fetch-depth: 0
 
       - name: Configure environment variables (Part 2)
         shell: bash
