@@ -85,7 +85,6 @@ jobs:
           - https://github.com/${{ github.repository }}/compare/${{ env.BASE_BRANCH }}...${{ env.HEAD_BRANCH }} """ >> $PR_BODY_FILE
 
           echo "PR_BODY_FILE=$PR_BODY_FILE" >> $GITHUB_ENV
-          cat $PR_BODY_FILE
         
       # - name: Create a PR
       #   env:
