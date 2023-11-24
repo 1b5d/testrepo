@@ -55,18 +55,18 @@ jobs:
           echo "PR_BRANCH=$(echo automated/${{ inputs.head_branch || github.event.inputs.head_branch }}-into-${{ inputs.base_branch || github.event.inputs.base_branch }}-for-$(git rev-parse --short HEAD)-${{ github.run_id }}-${{ github.run_attempt }})" >> $GITHUB_ENV
           echo "PR_BRANCH=$(echo automated/${{ inputs.head_branch || github.event.inputs.head_branch }}-into-${{ inputs.base_branch || github.event.inputs.base_branch }}-for-$(git rev-parse --short HEAD)-${{ github.run_id }}-${{ github.run_attempt }})"
 
-      - name: Create an auxiliary branch
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN || secrets.TOKEN }}
-        run: |
-          git branch ${{ env.PR_BRANCH }}
-          git push origin ${{ env.PR_BRANCH }}
+      # - name: Create an auxiliary branch
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN || secrets.TOKEN }}
+      #   run: |
+      #     git branch ${{ env.PR_BRANCH }}
+      #     git push origin ${{ env.PR_BRANCH }}
 
-      - name: Checkout auxiliary branch
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ env.PR_BRANCH }}
-          token: ${{ secrets.GITHUB_TOKEN || secrets.TOKEN }}
+      # - name: Checkout auxiliary branch
+      #   uses: actions/checkout@v4
+      #   with:
+      #     ref: ${{ env.PR_BRANCH }}
+      #     token: ${{ secrets.GITHUB_TOKEN || secrets.TOKEN }}
           
       - name: Construct PR body
         shell: bash
@@ -77,28 +77,30 @@ jobs:
           
           echo """Automated release merge https://github.com/${{ github.repository }}/tree/${{ env.HEAD_BRANCH }} into https://github.com/${{ github.repository }}/tree/${{ env.BASE_BRANCH }} for ${{ env.HASH }}.
           
-          ##### CHANGES
-          $(git log --oneline --decorate --abbrev-commit ${{ env.BASE_BRANCH }}..${{ env.HEAD_BRANCH }})
-
+          ##### CHANGES""" >> $PR_BODY_FILE
+          echo $CHANGES >> $PR_BODY_FILE
+          echo """
+          
           ##### DIFF
           - https://github.com/${{ github.repository }}/compare/${{ env.BASE_BRANCH }}...${{ env.HEAD_BRANCH }} """ >> $PR_BODY_FILE
 
           echo "PR_BODY_FILE=$PR_BODY_FILE" >> $GITHUB_ENV
         
-      - name: Create a PR
-        env:
-          GITHUB_TOKEN: ${{ secrets.CELOBOT_GITHUB_TOKEN }}
-        run: |
-          gh pr create \
-            --title "Merge ${{ env.HEAD_BRANCH }} into ${{ env.BASE_BRANCH }} for ${{ env.HASH_SHORT }}" \
-            --body-file "${{ env.PR_BODY_FILE }}" \
-            --base ${{ env.BASE_BRANCH }} \
-            --head ${{ env.PR_BRANCH }}
+      # - name: Create a PR
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.CELOBOT_GITHUB_TOKEN }}
+      #   run: |
+      #     gh pr create \
+      #       --title "Merge ${{ env.HEAD_BRANCH }} into ${{ env.BASE_BRANCH }} for ${{ env.HASH_SHORT }}" \
+      #       --body-file "${{ env.PR_BODY_FILE }}" \
+      #       --base ${{ env.BASE_BRANCH }} \
+      #       --head ${{ env.PR_BRANCH }}
+      #     rm "${{ env.PR_BODY_FILE }}"
 
-      - name: Cleanup auxiliary branch if PR creation failed
-        if: ${{ failure() }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN || secrets.TOKEN }}
-        shell: bash
-        run: |
-          git push origin --delete ${{ env.PR_BRANCH }}
+      # - name: Cleanup auxiliary branch if PR creation failed
+      #   if: ${{ failure() }}
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN || secrets.TOKEN }}
+      #   shell: bash
+      #   run: |
+      #     git push origin --delete ${{ env.PR_BRANCH }}
