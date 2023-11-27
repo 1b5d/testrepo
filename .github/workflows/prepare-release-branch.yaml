@@ -33,8 +33,8 @@ jobs:
       - name: Configure git
         shell: bash
         run: |
-          git config user.name 'bot'
-          git config user.email 'github-bot@example.com'
+          git config user.name '1b5d'
+          git config user.email '8110504+1b5d@users.noreply.github.com'
           git fetch --all --tags
       
       - name: Download Maven
