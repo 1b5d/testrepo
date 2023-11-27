@@ -1,10 +1,5 @@
 name: Prepare release branch
 
-permissions:
-  actions: write
-  workflows: write
-  contents: write
-
 on:
   workflow_dispatch:
   # inputs:
