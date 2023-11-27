@@ -30,6 +30,13 @@ jobs:
           cache: 'maven'
           check-latest: false
       
+      - name: Configure git
+        shell: bash
+        run: |
+          git config user.name 'bot'
+          git config user.email 'github-bot@example.com'
+          git fetch --all --tags
+      
       - name: Download Maven
         shell: bash
         run: |
