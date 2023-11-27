@@ -1,0 +1,135 @@
+name: Prepare release branch
+
+on:
+  workflow_dispatch:
+  # inputs:
+  #   send-notification:
+  #     description: 'Send a notification to the team channel when successful.'
+  #     required: true
+  #     type: boolean
+  #     default: true
+
+jobs:
+  prepare-release-branch:
+    runs-on: ubuntu-latest
+    environment: branch
+    steps:
+      - name: Checkout Main
+        uses: actions/checkout@v4
+        with:
+          ref: "main"
+          fetch-depth: 0
+          token: ${{ secrets.CELOBOT_GITHUB_TOKEN }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 17
+          server-id: github
+          cache: 'maven'
+          check-latest: false
+      
+      - name: Download Maven
+        shell: bash
+        run: |
+          MAVEN_VERSION=3.8.8
+          BASE_EXTRACTION_PATH=/usr/local
+          wget -q https://dlcdn.apache.org/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.zip -O /tmp/maven.zip
+          sudo unzip -qd $BASE_EXTRACTION_PATH /tmp/maven.zip && rm /tmp/maven.zip 
+          sudo ln -sf ${BASE_EXTRACTION_PATH}/apache-maven-${MAVEN_VERSION}/bin/mvn /usr/bin/mvn
+          echo "M2_HOME=${BASE_EXTRACTION_PATH}/apache-maven-${MAVEN_VERSION}" | sudo tee -a /etc/environment
+    
+      - name: Check Environment
+        shell: bash
+        run: |
+          uname -a
+          git --version
+          mvn -version
+          java -version
+
+      - name: Calculate versions
+        shell: bash
+        env:
+          GITHUB_ACTOR: celobot
+          GITHUB_TOKEN: ${{ secrets.CELOBOT_GITHUB_TOKEN }}
+        run: |
+          # The version which we release
+          RELEASE_VERSION=$(mvn build-helper:parse-version -q -Dexec.executable=echo -Dexec.args='${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}' --non-recursive exec:exec -s $GITHUB_WORKSPACE/settings.xml)
+          echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
+          # The next snaphost version e.g. 1.89.0-SNAPSHOT
+          echo "NEW_SNAPSHOT_VERSION=$(mvn build-helper:parse-version -q -Dexec.executable=echo -Dexec.args='${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}.${parsedVersion.incrementalVersion}-SNAPSHOT' --non-recursive exec:exec -s $GITHUB_WORKSPACE/settings.xml)" >> $GITHUB_ENV
+          # # Other parts
+          RELEASE_VERSION_PARTS=( ${RELEASE_VERSION//./ } )
+          PREVIOUS_MINOR_VERSION=$(expr ${RELEASE_VERSION_PARTS[1]} - 1 )
+          PREVIOUS_RELEASE_VERSION="${RELEASE_VERSION_PARTS[0]}.$PREVIOUS_MINOR_VERSION.${RELEASE_VERSION_PARTS[2]}"
+          echo "PREVIOUS_RELEASE_VERSION=$PREVIOUS_RELEASE_VERSION" >> $GITHUB_ENV
+
+      - name: Create new release branch
+        shell: bash
+        run: |
+          git checkout -b release/v${{ env.RELEASE_VERSION }}
+          git commit --allow-empty -m "Trigger Build for release/v${{ env.RELEASE_VERSION }}"
+          git checkout main
+
+      - name: Update environments.json
+        shell: bash
+        run: |
+          cat <<EOT > .github/workflows/environments.json
+          {
+              "alpha": "release/v${{ env.RELEASE_VERSION }}",
+              "beta": "release/v${{ env.RELEASE_VERSION }}"
+          }
+          EOT
+          git add .github/workflows/environments.json
+          git commit -m "Update environments.json"
+
+      - name: Bump to next minor version
+        shell: bash
+        env:
+          GITHUB_ACTOR: celobot
+          GITHUB_TOKEN: ${{ secrets.CELOBOT_GITHUB_TOKEN }}
+        run: |
+          mvn versions:set -DnewVersion=${{ env.NEW_SNAPSHOT_VERSION }} -s $GITHUB_WORKSPACE/settings.xml
+          git add pom.xml
+          git commit -m "Bump main to ${{ env.NEW_SNAPSHOT_VERSION }}"
+
+      - name: Update changelog since-tag in github-changelog-generator.properties
+        shell: bash
+        run: |
+          echo "since-tag=v${{ env.PREVIOUS_RELEASE_VERSION }}" > .github/github-changelog-generator.properties
+          git add .github/github-changelog-generator.properties
+          git commit --allow-empty -m "Update changelog since-tag to v${{ env.PREVIOUS_RELEASE_VERSION }}"
+
+      - name: Push new branch and main
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.CELOBOT_GITHUB_TOKEN }}
+        run: |
+          git push origin main
+          git push origin release/v${{ env.RELEASE_VERSION }}
+
+    outputs:
+      release_version: ${{ env.RELEASE_VERSION }}
+
+  call-create-or-update-release-tag:
+    needs: prepare-release-branch
+    uses: 1b5d/${{ github.repository }}/.github/workflows/create-or-update-release-tag.yml@main
+    with:
+      release_version: ${{ needs.prepare-release-branch.outputs.release_version }}
+
+  # notify-via-slack:
+  #   needs: prepare-release-branch
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Send Slack Notification
+  #       if: github.event.inputs.send-notification == 'true'
+  #       uses: slackapi/slack-github-action@v1.24.0
+  #       with:
+  #         payload: |
+  #           {
+  #             "branch": "release/v${{ needs.prepare-release-branch.outputs.release_version }}",
+  #             "version": "v${{ needs.prepare-release-branch.outputs.release_version }}"
+  #           }
+  #       env:
+  #         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_NEW_BRANCH }}

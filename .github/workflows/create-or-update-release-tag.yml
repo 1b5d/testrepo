@@ -1,0 +1,44 @@
+# Generates a changelog based on the last release tag on the given release branch
+
+name: Create or update release tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: Release version
+        required: true
+  workflow_call:
+    inputs:
+      release_version:
+        description: Release version
+        required: true
+        type: string
+
+jobs:
+  create-or-update-release-tag:
+    name: Create or update the release tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print workflow information
+        run: echo "Create or update release tag v${{ github.event.inputs.release_version || inputs.release_version }}"
+
+      - name: Delete outdated tag and release
+        uses: dev-drprasad/delete-tag-and-release@v1.0
+        with:
+          delete_release: true
+          tag_name: v${{ github.event.inputs.release_version || inputs.release_version }}
+          github_token: ${{ secrets.CELOBOT_GITHUB_TOKEN }}
+
+      - name: Create new release tag
+        uses: ncipollo/release-action@v1.13.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: v${{ github.event.inputs.release_version || inputs.release_version }}
+          name: v${{ github.event.inputs.release_version || inputs.release_version }}
+          commit: release/v${{ github.event.inputs.release_version || inputs.release_version }}
+          body: Please check [CHANGELOG.md](https://github.com/1b5d/testrepo/blob/main/CHANGELOG.md) for changes contained in this release.
+          draft: false
+          prerelease: false
+          allowUpdates: true
+          generateReleaseNotes: false
