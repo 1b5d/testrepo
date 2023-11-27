@@ -61,7 +61,7 @@ jobs:
           echo "NEW_SNAPSHOT_VERSION=$(mvn build-helper:parse-version -q -Dexec.executable=echo -Dexec.args='${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}.${parsedVersion.incrementalVersion}-SNAPSHOT' --non-recursive exec:exec)"
           echo "NEW_SNAPSHOT_VERSION=$(mvn build-helper:parse-version -q -Dexec.executable=echo -Dexec.args='${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}.${parsedVersion.incrementalVersion}-SNAPSHOT' --non-recursive exec:exec)" >> $GITHUB_ENV
           # # Other parts
-          RELEASE_VERSION_PARTS=( ${RELEASE_VERSION//./ } )
+          RELEASE_VERSION_PARTS=(`echo $RELEASE_VERSION | sed 's/\./\n/g'`)
           echo "RELEASE_VERSION_PARTS=$RELEASE_VERSION_PARTS"
           PREVIOUS_MINOR_VERSION=$(expr ${RELEASE_VERSION_PARTS[1]} - 1 )
           
