@@ -68,16 +68,22 @@ jobs:
           echo "NEW_SNAPSHOT_VERSION=$(mvn build-helper:parse-version -q -Dexec.executable=echo -Dexec.args='${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}.${parsedVersion.incrementalVersion}-SNAPSHOT' --non-recursive exec:exec)"
           echo "NEW_SNAPSHOT_VERSION=$(mvn build-helper:parse-version -q -Dexec.executable=echo -Dexec.args='${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}.${parsedVersion.incrementalVersion}-SNAPSHOT' --non-recursive exec:exec)" >> $GITHUB_ENV
           # # Other parts
-          RELEASE_VERSION_PARTS=( $(echo $RELEASE_VERSION | tr '.' '\n') )
-          echo "RELEASE_VERSION_PARTS=$RELEASE_VERSION_PARTS"
-          PREVIOUS_MINOR_VERSION=$(expr ${RELEASE_VERSION_PARTS[1]} - 1 )
+          # RELEASE_VERSION_PARTS=( $(echo $RELEASE_VERSION | tr '.' '\r') )
+          # echo "RELEASE_VERSION_PARTS=$RELEASE_VERSION_PARTS"
+          # PREVIOUS_MINOR_VERSION=$(expr ${RELEASE_VERSION_PARTS[1]} - 1 )
           
-          echo "PREVIOUS_MINOR_VERSION=$PREVIOUS_MINOR_VERSION"
-          PREVIOUS_RELEASE_VERSION="${RELEASE_VERSION_PARTS[0]}.$PREVIOUS_MINOR_VERSION.0"
+          # echo "PREVIOUS_MINOR_VERSION=$PREVIOUS_MINOR_VERSION"
+          # PREVIOUS_RELEASE_VERSION="${RELEASE_VERSION_PARTS[0]}.$PREVIOUS_MINOR_VERSION.0"
 
-          echo "PREVIOUS_RELEASE_VERSION=$PREVIOUS_RELEASE_VERSION"
-          echo "PREVIOUS_RELEASE_VERSION=$PREVIOUS_RELEASE_VERSION" >> $GITHUB_ENV
-
+          # echo "PREVIOUS_RELEASE_VERSION=$PREVIOUS_RELEASE_VERSION"
+          # echo "PREVIOUS_RELEASE_VERSION=$PREVIOUS_RELEASE_VERSION" >> $GITHUB_ENV
+        
+      - name: Get the latest release
+        id: latest_release
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          excludes: prerelease, draft
+      
       - name: Create new release branch
         shell: bash
         run: |
@@ -105,13 +111,13 @@ jobs:
           mvn versions:set -DnewVersion=${{ env.NEW_SNAPSHOT_VERSION }}
           git add pom.xml
           git commit -m "Bump main to ${{ env.NEW_SNAPSHOT_VERSION }}"
-
+  
       - name: Update changelog since-tag in github-changelog-generator.properties
         shell: bash
         run: |
-          echo "since-tag=v${{ env.PREVIOUS_RELEASE_VERSION }}" > .github/github-changelog-generator.properties
+          echo "since-tag=${{ steps.latest_release.outputs.release }}" > .github/github-changelog-generator.properties
           git add .github/github-changelog-generator.properties
-          git commit --allow-empty -m "Update changelog since-tag to v${{ env.PREVIOUS_RELEASE_VERSION }}"
+          git commit --allow-empty -m "Update changelog since-tag to ${{ steps.latest_release.outputs.release }}"
 
       - name: Push new branch and main
         shell: bash
