@@ -19,7 +19,7 @@ jobs:
         with:
           ref: "main"
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.CELOBOT_GITHUB_TOKEN }}
 
       - name: Setup Java
         uses: actions/setup-java@v3
@@ -58,7 +58,7 @@ jobs:
       - name: Calculate versions
         shell: bash
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.CELOBOT_GITHUB_TOKEN }}
         run: |
           # The version which we release
           RELEASE_VERSION=$(mvn build-helper:parse-version -q -Dexec.executable=echo -Dexec.args='${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}' --non-recursive exec:exec)
@@ -83,7 +83,7 @@ jobs:
         uses: InsonusK/get-latest-release@v1.0.1
         with:
           exclude_types: "draft|prerelease"
-          myToken: ${{ secrets.GITHUB_TOKEN }}
+          myToken: ${{ secrets.CELOBOT_GITHUB_TOKEN }}
       
       - name: Create new release branch
         shell: bash
@@ -107,7 +107,7 @@ jobs:
       - name: Bump to next minor version
         shell: bash
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.CELOBOT_GITHUB_TOKEN }}
         run: |
           mvn versions:set -DnewVersion=${{ env.NEW_SNAPSHOT_VERSION }}
           git add pom.xml
@@ -123,7 +123,7 @@ jobs:
       - name: Push new branch and main
         shell: bash
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.CELOBOT_GITHUB_TOKEN }}
         run: |
           git push origin main
           git push origin release/v${{ env.RELEASE_VERSION }}
