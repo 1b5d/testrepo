@@ -83,6 +83,7 @@ jobs:
         uses: InsonusK/get-latest-release@v1.0.1
         with:
           exclude_types: "draft|prerelease"
+          myToken: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Create new release branch
         shell: bash
