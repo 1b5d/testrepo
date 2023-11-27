@@ -114,7 +114,7 @@ jobs:
 
   call-create-or-update-release-tag:
     needs: prepare-release-branch
-    uses: 1b5d/${{ github.repository }}/.github/workflows/create-or-update-release-tag.yml@main
+    uses: 1b5d/testrepo/.github/workflows/create-or-update-release-tag.yml@main
     with:
       release_version: ${{ needs.prepare-release-branch.outputs.release_version }}
 
