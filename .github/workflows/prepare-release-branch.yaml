@@ -80,9 +80,9 @@ jobs:
         
       - name: Get the latest release
         id: latest_release
-        uses: pozetroninc/github-action-get-latest-release@master
+        uses: InsonusK/get-latest-release@v1.0.1
         with:
-          excludes: prerelease, draft
+          exclude_types: "draft|prerelease"
       
       - name: Create new release branch
         shell: bash
@@ -115,9 +115,9 @@ jobs:
       - name: Update changelog since-tag in github-changelog-generator.properties
         shell: bash
         run: |
-          echo "since-tag=${{ steps.latest_release.outputs.release }}" > .github/github-changelog-generator.properties
+          echo "since-tag=${{ steps.latest_release.outputs.tag_name }}" > .github/github-changelog-generator.properties
           git add .github/github-changelog-generator.properties
-          git commit --allow-empty -m "Update changelog since-tag to ${{ steps.latest_release.outputs.release }}"
+          git commit --allow-empty -m "Update changelog since-tag to ${{ steps.latest_release.outputs.tag_name }}"
 
       - name: Push new branch and main
         shell: bash
