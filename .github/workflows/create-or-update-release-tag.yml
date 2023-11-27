@@ -28,7 +28,7 @@ jobs:
         with:
           delete_release: true
           tag_name: v${{ github.event.inputs.release_version || inputs.release_version }}
-          github_token: ${{ secrets.CELOBOT_GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create new release tag
         uses: ncipollo/release-action@v1.13.0
