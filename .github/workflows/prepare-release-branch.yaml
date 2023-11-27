@@ -54,10 +54,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # The version which we release
-          RELEASE_VERSION=$(mvn build-helper:parse-version -q -Dexec.executable=echo -Dexec.args='${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}' --non-recursive exec:exec -s $GITHUB_WORKSPACE/settings.xml)
+          RELEASE_VERSION=$(mvn build-helper:parse-version -q -Dexec.executable=echo -Dexec.args='${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}' --non-recursive exec:exec)
           echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
           # The next snaphost version e.g. 1.89.0-SNAPSHOT
-          echo "NEW_SNAPSHOT_VERSION=$(mvn build-helper:parse-version -q -Dexec.executable=echo -Dexec.args='${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}.${parsedVersion.incrementalVersion}-SNAPSHOT' --non-recursive exec:exec -s $GITHUB_WORKSPACE/settings.xml)" >> $GITHUB_ENV
+          echo "NEW_SNAPSHOT_VERSION=$(mvn build-helper:parse-version -q -Dexec.executable=echo -Dexec.args='${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}.${parsedVersion.incrementalVersion}-SNAPSHOT' --non-recursive exec:exec)" >> $GITHUB_ENV
           # # Other parts
           RELEASE_VERSION_PARTS=( ${RELEASE_VERSION//./ } )
           PREVIOUS_MINOR_VERSION=$(expr ${RELEASE_VERSION_PARTS[1]} - 1 )
@@ -88,7 +88,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mvn versions:set -DnewVersion=${{ env.NEW_SNAPSHOT_VERSION }} -s $GITHUB_WORKSPACE/settings.xml
+          mvn versions:set -DnewVersion=${{ env.NEW_SNAPSHOT_VERSION }}
           git add pom.xml
           git commit -m "Bump main to ${{ env.NEW_SNAPSHOT_VERSION }}"
 
