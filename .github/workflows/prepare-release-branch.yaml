@@ -19,6 +19,7 @@ jobs:
         with:
           ref: "main"
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Print Token Permissions
         run: |
@@ -90,21 +91,30 @@ jobs:
       
       - name: Create new release branch
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git checkout -b release/v${{ env.RELEASE_VERSION }}
           git commit --allow-empty -m "Trigger Build for release/v${{ env.RELEASE_VERSION }}"
+          SHA=$(git rev-parse HEAD)
+          curl -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -d '{"state": "success", "context": "build_pull_request", "description": "Build passed", "target_url": "https://github.com/$GITHUB_REPOSITORY/commit/$SHA"}' \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$SHA"
           git checkout main
 
       - name: Update environments.json
         shell: bash
         run: |
-          cat <<EOT > .github/workflows/environments.json
+          cat <<EOT > environments.json
           {
               "alpha": "release/v${{ env.RELEASE_VERSION }}",
               "beta": "release/v${{ env.RELEASE_VERSION }}"
           }
           EOT
-          git add .github/workflows/environments.json
+          git add environments.json
           git commit -m "Update environments.json"
 
       - name: Bump to next minor version
@@ -118,10 +128,19 @@ jobs:
   
       - name: Update changelog since-tag in github-changelog-generator.properties
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "since-tag=${{ steps.latest_release.outputs.tag_name }}" > .github/github-changelog-generator.properties
           git add .github/github-changelog-generator.properties
           git commit --allow-empty -m "Update changelog since-tag to ${{ steps.latest_release.outputs.tag_name }}"
+          SHA=$(git rev-parse HEAD)
+          curl -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -d '{"state": "success", "context": "build_pull_request", "description": "Build passed", "target_url": "https://github.com/$GITHUB_REPOSITORY/commit/$SHA"}' \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$SHA"
 
       - name: Push new branch and main
         shell: bash
