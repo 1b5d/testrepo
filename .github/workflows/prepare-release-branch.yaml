@@ -145,7 +145,7 @@ jobs:
       - name: Push new branch and main
         shell: bash
         env:
-          GITHUB_TOKEN: ${{ secrets.CELOBOT_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git push origin main
           git push origin release/v${{ env.RELEASE_VERSION }}
